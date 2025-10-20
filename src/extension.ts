@@ -38,7 +38,7 @@ import {
   getNetworkInfoTemplate,
   getInjectionContainerTemplate,
 } from "./templates";
-import { analyzeDependencies } from "./utils";
+import { analyzeDependencies, getProjectName } from "./utils";
 
 export function activate (_context: ExtensionContext) {
   analyzeDependencies();
@@ -162,7 +162,8 @@ export async function promptForUseEquatable (): Promise<boolean> {
 async function generateBlocCode (
   blocName: string,
   targetDirectory: string,
-  useEquatable: boolean
+  useEquatable: boolean,
+  projectName: string = "my_app"
 ) {
   const blocDirectoryPath = `${targetDirectory}/bloc`;
   if (!existsSync(blocDirectoryPath)) {
@@ -172,13 +173,14 @@ async function generateBlocCode (
   await Promise.all([
     createBlocEventTemplate(blocName, targetDirectory, useEquatable),
     createBlocStateTemplate(blocName, targetDirectory, useEquatable),
-    createBlocTemplate(blocName, targetDirectory, useEquatable),
+    createBlocTemplate(blocName, targetDirectory, useEquatable, projectName),
   ]);
 }
 
 async function generateTemplateFiles(
   featureName: string,
-  targetDirectory: string
+  targetDirectory: string,
+  projectName: string = "my_app"
 ): Promise<void> {
   const featureDirectoryPath = path.join(targetDirectory, featureName);
   
@@ -186,17 +188,17 @@ async function generateTemplateFiles(
   const domainDirectoryPath = path.join(featureDirectoryPath, "domain");
   await Promise.all([
     createEntityTemplate(featureName, path.join(domainDirectoryPath, "entities")),
-    createRepositoryTemplate(featureName, path.join(domainDirectoryPath, "repositories")),
-    createUseCaseTemplate(featureName, "Get" + changeCase.pascalCase(featureName), path.join(domainDirectoryPath, "usecases")),
+    createRepositoryTemplate(featureName, path.join(domainDirectoryPath, "repositories"), projectName),
+    createUseCaseTemplate(featureName, "get" + changeCase.snakeCase(featureName), path.join(domainDirectoryPath, "usecases"), projectName),
   ]);
 
   // Create data layer files
   const dataDirectoryPath = path.join(featureDirectoryPath, "data");
   await Promise.all([
     createModelTemplate(featureName, path.join(dataDirectoryPath, "models")),
-    createRepositoryImplTemplate(featureName, path.join(dataDirectoryPath, "repositories")),
-    createRemoteDataSourceTemplate(featureName, path.join(dataDirectoryPath, "datasources")),
-    createLocalDataSourceTemplate(featureName, path.join(dataDirectoryPath, "datasources")),
+    createRepositoryImplTemplate(featureName, path.join(dataDirectoryPath, "repositories"), projectName),
+    createRemoteDataSourceTemplate(featureName, path.join(dataDirectoryPath, "datasources"), projectName),
+    createLocalDataSourceTemplate(featureName, path.join(dataDirectoryPath, "datasources"), projectName),
   ]);
 
   // Create presentation layer files
@@ -215,6 +217,9 @@ export async function generateFeatureArchitecture (
   targetDirectory: string,
   useEquatable: boolean
 ) {
+  // Get project name from pubspec.yaml
+  const projectName = await getProjectName();
+  
   // Create the features directory if its does not exist yet
   const featuresDirectoryPath = getFeaturesDirectoryPath(targetDirectory);
   if (!existsSync(featuresDirectoryPath)) {
@@ -253,10 +258,10 @@ export async function generateFeatureArchitecture (
   ]);
 
   // Generate the bloc code in the presentation layer
-  await generateBlocCode(featureName, presentationDirectoryPath, useEquatable);
+  await generateBlocCode(featureName, presentationDirectoryPath, useEquatable, projectName);
   
   // Generate all template files
-  await generateTemplateFiles(featureName, featuresDirectoryPath);
+  await generateTemplateFiles(featureName, featuresDirectoryPath, projectName);
 }
 
 export function getFeaturesDirectoryPath (currentDirectory: string): string {
@@ -358,7 +363,8 @@ function createBlocStateTemplate (
 function createBlocTemplate (
   blocName: string,
   targetDirectory: string,
-  useEquatable: boolean
+  useEquatable: boolean,
+  projectName: string = "my_app"
 ) {
   const snakeCaseBlocName = changeCase.snakeCase(blocName.toLowerCase());
   const targetPath = `${targetDirectory}/bloc/${snakeCaseBlocName}_bloc.dart`;
@@ -368,7 +374,7 @@ function createBlocTemplate (
   return new Promise(async (resolve, reject) => {
     writeFile(
       targetPath,
-      getBlocTemplate(blocName, useEquatable),
+      getBlocTemplate(blocName, useEquatable, projectName),
       "utf8",
       (error) => {
         if (error) {
@@ -444,7 +450,7 @@ async function createEntityTemplate(featureName: string, targetDirectory: string
   await writeFileAsync(targetPath, getEntityTemplate(featureName), "utf8");
 }
 
-async function createRepositoryTemplate(featureName: string, targetDirectory: string): Promise<void> {
+async function createRepositoryTemplate(featureName: string, targetDirectory: string, projectName: string = "my_app"): Promise<void> {
   const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
   const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_repository.dart`);
   
@@ -452,10 +458,10 @@ async function createRepositoryTemplate(featureName: string, targetDirectory: st
     throw new Error(`${snakeCaseFeatureName}_repository.dart already exists`);
   }
   
-  await writeFileAsync(targetPath, getRepositoryTemplate(featureName), "utf8");
+  await writeFileAsync(targetPath, getRepositoryTemplate(featureName, projectName), "utf8");
 }
 
-async function createUseCaseTemplate(featureName: string, useCaseName: string, targetDirectory: string): Promise<void> {
+async function createUseCaseTemplate(featureName: string, useCaseName: string, targetDirectory: string, projectName: string = "my_app"): Promise<void> {
   const snakeCaseUseCaseName = changeCase.snakeCase(useCaseName.toLowerCase());
   const targetPath = path.join(targetDirectory, `${snakeCaseUseCaseName}.dart`);
   
@@ -463,7 +469,7 @@ async function createUseCaseTemplate(featureName: string, useCaseName: string, t
     throw new Error(`${snakeCaseUseCaseName}.dart already exists`);
   }
   
-  await writeFileAsync(targetPath, getUseCaseTemplate(featureName, useCaseName), "utf8");
+  await writeFileAsync(targetPath, getUseCaseTemplate(featureName, useCaseName, projectName), "utf8");
 }
 
 async function createModelTemplate(featureName: string, targetDirectory: string): Promise<void> {
@@ -477,7 +483,7 @@ async function createModelTemplate(featureName: string, targetDirectory: string)
   await writeFileAsync(targetPath, getModelTemplate(featureName), "utf8");
 }
 
-async function createRepositoryImplTemplate(featureName: string, targetDirectory: string): Promise<void> {
+async function createRepositoryImplTemplate(featureName: string, targetDirectory: string, projectName: string = "my_app"): Promise<void> {
   const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
   const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_repository_impl.dart`);
   
@@ -485,10 +491,10 @@ async function createRepositoryImplTemplate(featureName: string, targetDirectory
     throw new Error(`${snakeCaseFeatureName}_repository_impl.dart already exists`);
   }
   
-  await writeFileAsync(targetPath, getRepositoryImplTemplate(featureName), "utf8");
+  await writeFileAsync(targetPath, getRepositoryImplTemplate(featureName, projectName), "utf8");
 }
 
-async function createRemoteDataSourceTemplate(featureName: string, targetDirectory: string): Promise<void> {
+async function createRemoteDataSourceTemplate(featureName: string, targetDirectory: string, projectName: string = "my_app"): Promise<void> {
   const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
   const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_remote_data_source.dart`);
   
@@ -496,10 +502,10 @@ async function createRemoteDataSourceTemplate(featureName: string, targetDirecto
     throw new Error(`${snakeCaseFeatureName}_remote_data_source.dart already exists`);
   }
   
-  await writeFileAsync(targetPath, getRemoteDataSourceTemplate(featureName), "utf8");
+  await writeFileAsync(targetPath, getRemoteDataSourceTemplate(featureName, projectName), "utf8");
 }
 
-async function createLocalDataSourceTemplate(featureName: string, targetDirectory: string): Promise<void> {
+async function createLocalDataSourceTemplate(featureName: string, targetDirectory: string, projectName: string = "my_app"): Promise<void> {
   const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
   const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_local_data_source.dart`);
   
@@ -507,7 +513,7 @@ async function createLocalDataSourceTemplate(featureName: string, targetDirector
     throw new Error(`${snakeCaseFeatureName}_local_data_source.dart already exists`);
   }
   
-  await writeFileAsync(targetPath, getLocalDataSourceTemplate(featureName), "utf8");
+  await writeFileAsync(targetPath, getLocalDataSourceTemplate(featureName, projectName), "utf8");
 }
 
 async function createPageTemplate(featureName: string, targetDirectory: string): Promise<void> {

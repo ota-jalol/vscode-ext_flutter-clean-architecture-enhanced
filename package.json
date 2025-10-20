@@ -2,7 +2,7 @@
   "name": "flutter-clean-architecture-enhanced",
   "displayName": "Flutter Clean Architecture - Enhanced",
   "description": "Enhanced version: Complete Clean Architecture with Freezed, modern BLoC, Dio, Dartz and 15+ generated files per feature",
-  "version": "3.0.0",
+  "version": "3.1.1",
   "publisher": "OtaJalol",
   "repository": {
     "type": "git",
@@ -73,7 +73,8 @@
     "pretest": "npm run compile",
     "test": "node ./out/test/runTest.js",
     "package": "vsce package",
-    "deploy": "vsce publish"
+    "deploy": "vsce publish",
+    "package-vsix":" npm run package"
   },
   "devDependencies": {
     "@types/change-case": "^2.3.1",

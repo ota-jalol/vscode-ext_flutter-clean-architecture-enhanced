@@ -1,20 +1,19 @@
 import * as changeCase from "change-case";
 
-export function getRepositoryImplTemplate(featureName: string): string {
+export function getRepositoryImplTemplate(featureName: string, projectName: string = "my_app"): string {
   const pascalCaseFeatureName = changeCase.pascalCase(featureName.toLowerCase());
   const camelCaseFeatureName = changeCase.camelCase(featureName.toLowerCase());
   const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
   
   return `import 'package:dartz/dartz.dart';
-
-import '../../domain/entities/${snakeCaseFeatureName}.dart';
-import '../../domain/repositories/${snakeCaseFeatureName}_repository.dart';
-import '../../core/error/failures.dart';
-import '../../core/error/exceptions.dart';
-import '../../core/network/network_info.dart';
-import '../datasources/${snakeCaseFeatureName}_local_data_source.dart';
-import '../datasources/${snakeCaseFeatureName}_remote_data_source.dart';
-import '../models/${snakeCaseFeatureName}_model.dart';
+import 'package:${projectName}/core/error/failures.dart';
+import 'package:${projectName}/core/error/exceptions.dart';
+import 'package:${projectName}/core/network/network_info.dart';
+import 'package:${projectName}/features/${snakeCaseFeatureName}/domain/entities/${snakeCaseFeatureName}.dart';
+import 'package:${projectName}/features/${snakeCaseFeatureName}/domain/repositories/${snakeCaseFeatureName}_repository.dart';
+import 'package:${projectName}/features/${snakeCaseFeatureName}/data/datasources/${snakeCaseFeatureName}_local_data_source.dart';
+import 'package:${projectName}/features/${snakeCaseFeatureName}/data/datasources/${snakeCaseFeatureName}_remote_data_source.dart';
+import 'package:${projectName}/features/${snakeCaseFeatureName}/data/models/${snakeCaseFeatureName}_model.dart';
 
 typedef _${pascalCaseFeatureName}Chooser = Future<${pascalCaseFeatureName}Model> Function();
 

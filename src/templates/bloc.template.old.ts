@@ -9,16 +9,14 @@ export function getBlocTemplate (blocName: string, useEquatable: boolean, projec
 function getEquatableBlocTemplate (blocName: string, projectName: string = "my_app") {
   const pascalCaseBlocName = changeCase.pascalCase(blocName.toLowerCase());
   const snakeCaseBlocName = changeCase.snakeCase(blocName.toLowerCase());
-  const camelCaseBlocName = changeCase.camelCase(blocName.toLowerCase());
   const blocState = `${pascalCaseBlocName}State`;
   const blocEvent = `${pascalCaseBlocName}Event`;
-  
   return `import 'package:bloc/bloc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:${projectName}/core/error/failures.dart';
 import 'package:${projectName}/features/${snakeCaseBlocName}/domain/entities/${snakeCaseBlocName}.dart';
-import 'package:${projectName}/features/${snakeCaseBlocName}/domain/usecases/get${snakeCaseBlocName}.dart';
+import 'package:${projectName}/features/${snakeCaseBlocName}/domain/usecases/get_${snakeCaseBlocName}.dart';
 
 part '${snakeCaseBlocName}_event.dart';
 part '${snakeCaseBlocName}_state.dart';
@@ -28,7 +26,7 @@ const String CACHE_FAILURE_MESSAGE = 'Cache Failure';
 const String INVALID_INPUT_FAILURE_MESSAGE = 'Invalid Input - The number must be a positive integer or zero.';
 
 class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
-  final Get${snakeCaseBlocName} get${pascalCaseBlocName};
+  final Get${pascalCaseBlocName} get${pascalCaseBlocName};
 
   ${pascalCaseBlocName}Bloc({
     required this.get${pascalCaseBlocName},
@@ -48,7 +46,7 @@ class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
       },
       (integer) async {
         emit(Loading());
-        final failureOrNumber = await get${pascalCaseBlocName}(params: Get${snakeCaseBlocName}Params(id: integer));
+        final failureOrNumber = await get${pascalCaseBlocName}(params: Get${pascalCaseBlocName}Params(id: integer));
         emit(_eitherLoadedOrErrorState(failureOrNumber));
       },
     );
@@ -59,7 +57,7 @@ class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
     Emitter<${pascalCaseBlocName}State> emit,
   ) async {
     emit(Loading());
-    final failureOrNumber = await get${pascalCaseBlocName}(params: Get${snakeCaseBlocName}Params(id: 1)); // Random logic to be implemented
+    final failureOrNumber = await get${pascalCaseBlocName}(params: Get${pascalCaseBlocName}Params(id: 1)); // Random logic to be implemented
     emit(_eitherLoadedOrErrorState(failureOrNumber));
   }
 
@@ -68,7 +66,7 @@ class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
   ) {
     return either.fold(
       (failure) => Error(message: _mapFailureToMessage(failure)),
-      (${camelCaseBlocName}) => Loaded(${camelCaseBlocName}: ${camelCaseBlocName}),
+      (${changeCase.camelCase(blocName.toLowerCase())}) => Loaded(${changeCase.camelCase(blocName.toLowerCase())}: ${changeCase.camelCase(blocName.toLowerCase())}),
     );
   }
 
@@ -89,7 +87,7 @@ class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
       if (integer < 0) throw const FormatException();
       return Right(integer);
     } on FormatException {
-      return Left(Failure(message: ""));
+      return Left(InvalidInputFailure());
     }
   }
 }
@@ -99,16 +97,14 @@ class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
 function getDefaultBlocTemplate (blocName: string, projectName: string = "my_app") {
   const pascalCaseBlocName = changeCase.pascalCase(blocName.toLowerCase());
   const snakeCaseBlocName = changeCase.snakeCase(blocName.toLowerCase());
-  const camelCaseBlocName = changeCase.camelCase(blocName.toLowerCase());
   const blocState = `${pascalCaseBlocName}State`;
   const blocEvent = `${pascalCaseBlocName}Event`;
-  
   return `import 'package:bloc/bloc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:meta/meta.dart';
 import 'package:${projectName}/core/error/failures.dart';
 import 'package:${projectName}/features/${snakeCaseBlocName}/domain/entities/${snakeCaseBlocName}.dart';
-import 'package:${projectName}/features/${snakeCaseBlocName}/domain/usecases/get${snakeCaseBlocName}.dart';
+import 'package:${projectName}/features/${snakeCaseBlocName}/domain/usecases/get_${snakeCaseBlocName}.dart';
 
 part '${snakeCaseBlocName}_event.dart';
 part '${snakeCaseBlocName}_state.dart';
@@ -118,7 +114,7 @@ const String CACHE_FAILURE_MESSAGE = 'Cache Failure';
 const String INVALID_INPUT_FAILURE_MESSAGE = 'Invalid Input - The number must be a positive integer or zero.';
 
 class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
-  final Get${snakeCaseBlocName} get${pascalCaseBlocName};
+  final Get${pascalCaseBlocName} get${pascalCaseBlocName};
 
   ${pascalCaseBlocName}Bloc({
     required this.get${pascalCaseBlocName},
@@ -138,7 +134,7 @@ class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
       },
       (integer) async {
         emit(Loading());
-        final failureOrNumber = await get${pascalCaseBlocName}(params: Get${snakeCaseBlocName}Params(id: integer));
+        final failureOrNumber = await get${pascalCaseBlocName}(params: Get${pascalCaseBlocName}Params(id: integer));
         emit(_eitherLoadedOrErrorState(failureOrNumber));
       },
     );
@@ -149,7 +145,7 @@ class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
     Emitter<${pascalCaseBlocName}State> emit,
   ) async {
     emit(Loading());
-    final failureOrNumber = await get${pascalCaseBlocName}(params: Get${snakeCaseBlocName}Params(id: 1)); // Random logic to be implemented
+    final failureOrNumber = await get${pascalCaseBlocName}(params: Get${pascalCaseBlocName}Params(id: 1)); // Random logic to be implemented
     emit(_eitherLoadedOrErrorState(failureOrNumber));
   }
 
@@ -158,7 +154,7 @@ class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
   ) {
     return either.fold(
       (failure) => Error(message: _mapFailureToMessage(failure)),
-      (${camelCaseBlocName}) => Loaded(${camelCaseBlocName}: ${camelCaseBlocName}),
+      (${changeCase.camelCase(blocName.toLowerCase())}) => Loaded(${changeCase.camelCase(blocName.toLowerCase())}: ${changeCase.camelCase(blocName.toLowerCase())}),
     );
   }
 
@@ -179,7 +175,7 @@ class ${pascalCaseBlocName}Bloc extends Bloc<${blocEvent}, ${blocState}> {
       if (integer < 0) throw const FormatException();
       return Right(integer);
     } on FormatException {
-      return Left(Failure(message: ""));
+      return Left(InvalidInputFailure());
     }
   }
 }

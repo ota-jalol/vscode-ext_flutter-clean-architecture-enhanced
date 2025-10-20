@@ -2,23 +2,25 @@ export function getFailuresTemplate(): string {
   return `import 'package:equatable/equatable.dart';
 
 abstract class Failure extends Equatable {
-  const Failure([List properties = const <dynamic>[]]);
+  final String message;
+  
+  const Failure({required this.message});
+  
+  @override
+  List<Object> get props => [message];
 }
 
 // General failures
 class ServerFailure extends Failure {
-  @override
-  List<Object> get props => [];
+  const ServerFailure() : super(message: 'Server Failure');
 }
 
 class CacheFailure extends Failure {
-  @override
-  List<Object> get props => [];
+  const CacheFailure() : super(message: 'Cache Failure');
 }
 
 class InvalidInputFailure extends Failure {
-  @override
-  List<Object> get props => [];
+  const InvalidInputFailure() : super(message: 'Invalid Input');
 }
 `;
 }
@@ -37,7 +39,7 @@ import 'package:equatable/equatable.dart';
 import '../error/failures.dart';
 
 abstract class UseCase<Type, Params> {
-  Future<Either<Failure, Type>> call(Params params);
+  Future<Type> call({Params? params});
 }
 
 class NoParams extends Equatable {

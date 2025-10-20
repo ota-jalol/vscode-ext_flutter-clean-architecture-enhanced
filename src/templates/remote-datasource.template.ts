@@ -1,14 +1,13 @@
 import * as changeCase from "change-case";
 
-export function getRemoteDataSourceTemplate(featureName: string): string {
+export function getRemoteDataSourceTemplate(featureName: string, projectName: string = "my_app"): string {
   const pascalCaseFeatureName = changeCase.pascalCase(featureName.toLowerCase());
   const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
   
   return `import 'dart:convert';
 import 'package:dio/dio.dart';
-
-import '../models/${snakeCaseFeatureName}_model.dart';
-import '../../core/error/exceptions.dart';
+import 'package:${projectName}/core/error/exceptions.dart';
+import 'package:${projectName}/features/${snakeCaseFeatureName}/data/models/${snakeCaseFeatureName}_model.dart';
 
 abstract class ${pascalCaseFeatureName}RemoteDataSource {
   Future<List<${pascalCaseFeatureName}Model>> get${pascalCaseFeatureName}s();
