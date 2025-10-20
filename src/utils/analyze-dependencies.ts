@@ -20,7 +20,7 @@ export async function analyzeDependencies() {
   const dependenciesToAnalyze = [
     {
       name: "equatable",
-      version: "^2.0.3",
+      version: "^2.0.7",
       actions: [
         {
           name: "Open Migration Guide",
@@ -36,7 +36,7 @@ export async function analyzeDependencies() {
     },
     {
       name: "bloc",
-      version: "^8.0.3",
+      version: "^9.1.0",
       actions: [
         {
           name: "Open Migration Guide",
@@ -46,10 +46,9 @@ export async function analyzeDependencies() {
         },
       ],
     },
-
     {
       name: "flutter_bloc",
-      version: "^8.0.1",
+      version: "^9.1.1",
       actions: [
         {
           name: "Open Migration Guide",
@@ -59,26 +58,82 @@ export async function analyzeDependencies() {
         },
       ],
     },
-    { name: "angular_bloc", version: "^8.0.0", actions: [] },
     {
-      name: "hydrated_bloc",
-      version: "^8.0.0",
+      name: "dartz",
+      version: "^0.10.1",
       actions: [
         {
-          name: "Open Migration Guide",
+          name: "Open Documentation",
           callback: () => {
-            env.openExternal(Uri.parse("https://bloclibrary.dev/#/migration"));
+            env.openExternal(Uri.parse("https://pub.dev/packages/dartz"));
           },
         },
       ],
     },
-    { name: "sealed_flutter_bloc", version: "^8.0.0", actions: [] },
+    {
+      name: "freezed",
+      version: "^3.2.3",
+      actions: [
+        {
+          name: "Open Documentation",
+          callback: () => {
+            env.openExternal(Uri.parse("https://pub.dev/packages/freezed"));
+          },
+        },
+      ],
+    },
+    {
+      name: "freezed_annotation",
+      version: "^3.1.0",
+      actions: [],
+    },
+    {
+      name: "json_annotation",
+      version: "^4.9.0",
+      actions: [],
+    },
+    {
+      name: "dio",
+      version: "^5.9.0",
+      actions: [
+        {
+          name: "Open Documentation",
+          callback: () => {
+            env.openExternal(Uri.parse("https://pub.dev/packages/dio"));
+          },
+        },
+      ],
+    },
+    {
+      name: "get_it",
+      version: "^8.2.0",
+      actions: [
+        {
+          name: "Open Documentation",
+          callback: () => {
+            env.openExternal(Uri.parse("https://pub.dev/packages/get_it"));
+          },
+        },
+      ],
+    },
+    {
+      name: "connectivity_plus",
+      version: "^7.0.0",
+      actions: [
+        {
+          name: "Open Documentation",
+          callback: () => {
+            env.openExternal(Uri.parse("https://pub.dev/packages/connectivity_plus"));
+          },
+        },
+      ],
+    },
   ];
 
   const devDependenciesToAnalyze = [
     {
       name: "bloc_test",
-      version: "^9.0.3",
+      version: "^10.0.0",
       actions: [
         {
           name: "Open Migration Guide",
@@ -87,6 +142,26 @@ export async function analyzeDependencies() {
           },
         },
       ],
+    },
+    {
+      name: "json_serializable",
+      version: "^6.11.1",
+      actions: [],
+    },
+    {
+      name: "build_runner",
+      version: "^2.9.0",
+      actions: [],
+    },
+    {
+      name: "mockito",
+      version: "^5.4.4",
+      actions: [],
+    },
+    {
+      name: "freezed",
+      version: "^2.7.1",
+      actions: [],
     },
   ];
 
@@ -121,19 +196,20 @@ function checkForUpgrades(
             `This workspace contains an unsupported version of ${dependency.name}. Please update to ${dependency.version}.`,
             ...dependency.actions.map((action) => action.name).concat("Update")
           )
-          .then((invokedAction) => {
+          .then(async (invokedAction) => {
             if (invokedAction === "Update") {
-              return updatePubspecDependency({
+              await updatePubspecDependency({
                 name: dependency.name,
                 latestVersion: dependency.version,
                 currentVersion: dependencyVersion,
               });
-            }
-            const action = dependency.actions.find(
-              (action) => action.name === invokedAction
-            );
-            if (!_.isNil(action)) {
-              action.callback();
+            } else {
+              const action = dependency.actions.find(
+                (action) => action.name === invokedAction
+              );
+              if (action) {
+                action.callback();
+              }
             }
           });
       }

@@ -1,16 +1,30 @@
 {
-  "name": "flutter-clean-architecture",
-  "displayName": "Flutter Feature Scaffolding",
-  "description": "Add new feature easily with well structured directories (Clean Architecture pattern)",
-  "version": "2.1.5",
-  "publisher": "KiritchoukC",
+  "name": "flutter-clean-architecture-enhanced",
+  "displayName": "Flutter Clean Architecture - Enhanced",
+  "description": "Enhanced version: Complete Clean Architecture with Freezed, modern BLoC, Dio, Dartz and 15+ generated files per feature",
+  "version": "3.0.0",
+  "publisher": "OtaJalol",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KiritchoukC/vscode-ext_flutter-clean-architecture"
+    "url": "https://github.com/ota-jalol/vscode-ext_flutter-clean-architecture-enhanced.git"
   },
   "license": "MIT",
+  "author": {
+    "name": "OtaJalol",
+    "email": "otajalol@example.com"
+  },
+  "contributors": [
+    {
+      "name": "KiritchoukC",
+      "url": "https://github.com/KiritchoukC"
+    }
+  ],
   "engines": {
     "vscode": "^1.54.0"
+  },
+  "homepage": "hhttps://github.com/ota-jalol/vscode-ext_flutter-clean-architecture-enhanced",
+  "bugs": {
+    "url": "https://github.com/ota-jalol/vscode-ext_flutter-clean-architecture-enhanced/issues"
   },
   "categories": [
     "Programming Languages"
@@ -20,7 +34,12 @@
     "dart",
     "flutter",
     "bloc",
-    "state-management"
+    "state-management",
+    "freezed",
+    "dio",
+    "dartz",
+    "getit",
+    "enhanced"
   ],
   "icon": "assets/logo.png",
   "activationEvents": [
@@ -32,13 +51,7 @@
     "commands": [
       {
         "command": "extension.new-feature-bloc",
-        "title": "Bloc: New Feature",
-        "category": "Flutter Clean Architecture",
-        "icon": "assets/logo.png"
-      },
-      {
-        "command": "extension.new-feature-cubit",
-        "title": "Cubit: New Feature",
+        "title": "New Feature",
         "category": "Flutter Clean Architecture",
         "icon": "assets/logo.png"
       }
@@ -49,22 +62,18 @@
           "command": "extension.new-feature-bloc",
           "group": "cleanArchitectureGroup@1",
           "when": "explorerResourceIsFolder"
-        },
-        {
-          "command": "extension.new-feature-cubit",
-          "group": "cleanArchitectureGroup@2",
-          "when": "explorerResourceIsFolder"
         }
       ]
     }
   },
   "scripts": {
-    "vscode:prepublish": "yarn run compile",
+    "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "yarn run compile",
+    "pretest": "npm run compile",
     "test": "node ./out/test/runTest.js",
-    "deploy": "vsce publish --yarn"
+    "package": "vsce package",
+    "deploy": "vsce publish"
   },
   "devDependencies": {
     "@types/change-case": "^2.3.1",

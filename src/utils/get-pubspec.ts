@@ -1,13 +1,19 @@
 import * as yaml from "js-yaml";
 import { getPubspecPath } from "./get-pubspec-path";
-import * as vscode from "vscode";
+import * as fs from "fs";
+import { promisify } from "util";
+
+const readFile = promisify(fs.readFile);
 
 export async function getPubspec () {
   const pubspecPath = getPubspecPath();
   if (pubspecPath) {
     try {
-      let content = await vscode.workspace.fs.readFile(vscode.Uri.file(pubspecPath));
-      return yaml.safeLoad(content.toString());
-    } catch (_) { }
+      const content = await readFile(pubspecPath, "utf8");
+      return yaml.safeLoad(content);
+    } catch (_) { 
+      return undefined;
+    }
   }
+  return undefined;
 }

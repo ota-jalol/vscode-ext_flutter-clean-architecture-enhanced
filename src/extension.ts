@@ -12,13 +12,31 @@ import {
   Uri,
   window,
 } from "vscode";
-import { existsSync, lstatSync, writeFile, appendFile } from "fs";
+import { existsSync, lstatSync, writeFile } from "fs";
+import { promisify } from "util";
+
+const writeFileAsync = promisify(writeFile);
 import {
   getBlocEventTemplate,
   getBlocStateTemplate,
   getBlocTemplate,
-  getCubitStateTemplate,
-  getCubitTemplate,
+  getEntityTemplate,
+  getRepositoryTemplate,
+  getUseCaseTemplate,
+  getModelTemplate,
+  getRepositoryImplTemplate,
+  getRemoteDataSourceTemplate,
+  getLocalDataSourceTemplate,
+  getPageTemplate,
+  getDisplayWidgetTemplate,
+  getControlsWidgetTemplate,
+  getLoadingWidgetTemplate,
+  getMessageDisplayWidgetTemplate,
+  getFailuresTemplate,
+  getExceptionsTemplate,
+  getCoreUseCaseTemplate,
+  getNetworkInfoTemplate,
+  getInjectionContainerTemplate,
 } from "./templates";
 import { analyzeDependencies } from "./utils";
 
@@ -26,15 +44,11 @@ export function activate (_context: ExtensionContext) {
   analyzeDependencies();
 
   commands.registerCommand("extension.new-feature-bloc", async (uri: Uri) => {
-    Go(uri, false);
-  });
-
-  commands.registerCommand("extension.new-feature-cubit", async (uri: Uri) => {
-    Go(uri, true);
+    Go(uri);
   });
 }
 
-export async function Go (uri: Uri, useCubit: boolean) {
+export async function Go (uri: Uri) {
   // Show feature prompt
   let featureName = await promptForFeatureName();
 
@@ -65,8 +79,7 @@ export async function Go (uri: Uri, useCubit: boolean) {
     await generateFeatureArchitecture(
       `${featureName}`,
       targetDirectory,
-      useEquatable,
-      useCubit
+      useEquatable
     );
     window.showInformationMessage(
       `Successfully Generated ${pascalCaseFeatureName} Feature`
@@ -163,27 +176,44 @@ async function generateBlocCode (
   ]);
 }
 
-async function generateCubitCode (
-  blocName: string,
-  targetDirectory: string,
-  useEquatable: boolean
-) {
-  const blocDirectoryPath = `${targetDirectory}/cubit`;
-  if (!existsSync(blocDirectoryPath)) {
-    await createDirectory(blocDirectoryPath);
-  }
-
+async function generateTemplateFiles(
+  featureName: string,
+  targetDirectory: string
+): Promise<void> {
+  const featureDirectoryPath = path.join(targetDirectory, featureName);
+  
+  // Create domain layer files
+  const domainDirectoryPath = path.join(featureDirectoryPath, "domain");
   await Promise.all([
-    createCubitStateTemplate(blocName, targetDirectory, useEquatable),
-    createCubitTemplate(blocName, targetDirectory, useEquatable),
+    createEntityTemplate(featureName, path.join(domainDirectoryPath, "entities")),
+    createRepositoryTemplate(featureName, path.join(domainDirectoryPath, "repositories")),
+    createUseCaseTemplate(featureName, "Get" + changeCase.pascalCase(featureName), path.join(domainDirectoryPath, "usecases")),
+  ]);
+
+  // Create data layer files
+  const dataDirectoryPath = path.join(featureDirectoryPath, "data");
+  await Promise.all([
+    createModelTemplate(featureName, path.join(dataDirectoryPath, "models")),
+    createRepositoryImplTemplate(featureName, path.join(dataDirectoryPath, "repositories")),
+    createRemoteDataSourceTemplate(featureName, path.join(dataDirectoryPath, "datasources")),
+    createLocalDataSourceTemplate(featureName, path.join(dataDirectoryPath, "datasources")),
+  ]);
+
+  // Create presentation layer files
+  const presentationDirectoryPath = path.join(featureDirectoryPath, "presentation");
+  await Promise.all([
+    createPageTemplate(featureName, path.join(presentationDirectoryPath, "pages")),
+    createDisplayWidgetTemplate(featureName, path.join(presentationDirectoryPath, "widgets")),
+    createControlsWidgetTemplate(featureName, path.join(presentationDirectoryPath, "widgets")),
+    createLoadingWidgetTemplate(path.join(presentationDirectoryPath, "widgets")),
+    createMessageDisplayWidgetTemplate(path.join(presentationDirectoryPath, "widgets")),
   ]);
 }
 
 export async function generateFeatureArchitecture (
   featureName: string,
   targetDirectory: string,
-  useEquatable: boolean,
-  useCubit: boolean
+  useEquatable: boolean
 ) {
   // Create the features directory if its does not exist yet
   const featuresDirectoryPath = getFeaturesDirectoryPath(targetDirectory);
@@ -217,15 +247,16 @@ export async function generateFeatureArchitecture (
     "presentation"
   );
   await createDirectories(presentationDirectoryPath, [
-    useCubit ? "cubit" : "bloc",
+    "bloc",
     "pages",
     "widgets",
   ]);
 
   // Generate the bloc code in the presentation layer
-  useCubit
-    ? await generateCubitCode(featureName, presentationDirectoryPath, useEquatable)
-    : await generateBlocCode(featureName, presentationDirectoryPath, useEquatable);
+  await generateBlocCode(featureName, presentationDirectoryPath, useEquatable);
+  
+  // Generate all template files
+  await generateTemplateFiles(featureName, featuresDirectoryPath);
 }
 
 export function getFeaturesDirectoryPath (currentDirectory: string): string {
@@ -363,7 +394,7 @@ function createCubitStateTemplate (
   return new Promise(async (resolve, reject) => {
     writeFile(
       targetPath,
-      getCubitStateTemplate(blocName, useEquatable),
+      getBlocStateTemplate(blocName, useEquatable),
       "utf8",
       (error) => {
         if (error) {
@@ -389,7 +420,7 @@ function createCubitTemplate (
   return new Promise(async (resolve, reject) => {
     writeFile(
       targetPath,
-      getCubitTemplate(blocName, useEquatable),
+      getBlocTemplate(blocName, useEquatable),
       "utf8",
       (error) => {
         if (error) {
@@ -400,4 +431,134 @@ function createCubitTemplate (
       }
     );
   });
+}
+
+async function createEntityTemplate(featureName: string, targetDirectory: string): Promise<void> {
+  const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
+  const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}.dart`);
+  
+  if (existsSync(targetPath)) {
+    throw new Error(`${snakeCaseFeatureName}.dart already exists`);
+  }
+  
+  await writeFileAsync(targetPath, getEntityTemplate(featureName), "utf8");
+}
+
+async function createRepositoryTemplate(featureName: string, targetDirectory: string): Promise<void> {
+  const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
+  const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_repository.dart`);
+  
+  if (existsSync(targetPath)) {
+    throw new Error(`${snakeCaseFeatureName}_repository.dart already exists`);
+  }
+  
+  await writeFileAsync(targetPath, getRepositoryTemplate(featureName), "utf8");
+}
+
+async function createUseCaseTemplate(featureName: string, useCaseName: string, targetDirectory: string): Promise<void> {
+  const snakeCaseUseCaseName = changeCase.snakeCase(useCaseName.toLowerCase());
+  const targetPath = path.join(targetDirectory, `${snakeCaseUseCaseName}.dart`);
+  
+  if (existsSync(targetPath)) {
+    throw new Error(`${snakeCaseUseCaseName}.dart already exists`);
+  }
+  
+  await writeFileAsync(targetPath, getUseCaseTemplate(featureName, useCaseName), "utf8");
+}
+
+async function createModelTemplate(featureName: string, targetDirectory: string): Promise<void> {
+  const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
+  const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_model.dart`);
+  
+  if (existsSync(targetPath)) {
+    throw new Error(`${snakeCaseFeatureName}_model.dart already exists`);
+  }
+  
+  await writeFileAsync(targetPath, getModelTemplate(featureName), "utf8");
+}
+
+async function createRepositoryImplTemplate(featureName: string, targetDirectory: string): Promise<void> {
+  const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
+  const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_repository_impl.dart`);
+  
+  if (existsSync(targetPath)) {
+    throw new Error(`${snakeCaseFeatureName}_repository_impl.dart already exists`);
+  }
+  
+  await writeFileAsync(targetPath, getRepositoryImplTemplate(featureName), "utf8");
+}
+
+async function createRemoteDataSourceTemplate(featureName: string, targetDirectory: string): Promise<void> {
+  const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
+  const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_remote_data_source.dart`);
+  
+  if (existsSync(targetPath)) {
+    throw new Error(`${snakeCaseFeatureName}_remote_data_source.dart already exists`);
+  }
+  
+  await writeFileAsync(targetPath, getRemoteDataSourceTemplate(featureName), "utf8");
+}
+
+async function createLocalDataSourceTemplate(featureName: string, targetDirectory: string): Promise<void> {
+  const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
+  const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_local_data_source.dart`);
+  
+  if (existsSync(targetPath)) {
+    throw new Error(`${snakeCaseFeatureName}_local_data_source.dart already exists`);
+  }
+  
+  await writeFileAsync(targetPath, getLocalDataSourceTemplate(featureName), "utf8");
+}
+
+async function createPageTemplate(featureName: string, targetDirectory: string): Promise<void> {
+  const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
+  const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_page.dart`);
+  
+  if (existsSync(targetPath)) {
+    throw new Error(`${snakeCaseFeatureName}_page.dart already exists`);
+  }
+  
+  await writeFileAsync(targetPath, getPageTemplate(featureName), "utf8");
+}
+
+async function createDisplayWidgetTemplate(featureName: string, targetDirectory: string): Promise<void> {
+  const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
+  const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_display.dart`);
+  
+  if (existsSync(targetPath)) {
+    throw new Error(`${snakeCaseFeatureName}_display.dart already exists`);
+  }
+  
+  await writeFileAsync(targetPath, getDisplayWidgetTemplate(featureName), "utf8");
+}
+
+async function createControlsWidgetTemplate(featureName: string, targetDirectory: string): Promise<void> {
+  const snakeCaseFeatureName = changeCase.snakeCase(featureName.toLowerCase());
+  const targetPath = path.join(targetDirectory, `${snakeCaseFeatureName}_controls.dart`);
+  
+  if (existsSync(targetPath)) {
+    throw new Error(`${snakeCaseFeatureName}_controls.dart already exists`);
+  }
+  
+  await writeFileAsync(targetPath, getControlsWidgetTemplate(featureName), "utf8");
+}
+
+async function createLoadingWidgetTemplate(targetDirectory: string): Promise<void> {
+  const targetPath = path.join(targetDirectory, `loading_widget.dart`);
+  
+  if (existsSync(targetPath)) {
+    return; // Don't throw error for common widgets, just skip
+  }
+  
+  await writeFileAsync(targetPath, getLoadingWidgetTemplate(), "utf8");
+}
+
+async function createMessageDisplayWidgetTemplate(targetDirectory: string): Promise<void> {
+  const targetPath = path.join(targetDirectory, `message_display.dart`);
+  
+  if (existsSync(targetPath)) {
+    return; // Don't throw error for common widgets, just skip
+  }
+  
+  await writeFileAsync(targetPath, getMessageDisplayWidgetTemplate(), "utf8");
 }

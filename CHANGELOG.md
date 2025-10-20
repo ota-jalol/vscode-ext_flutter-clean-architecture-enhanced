@@ -1,6 +1,69 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+All notable changes to this enhanced project will be documented in this file.
+
+## [3.0.0] - 2025-10-20 - Enhanced Version by OtaJalol
+
+### 🎉 Major Rewrite and Enhancement
+
+Bu versiya [KiritchoukC/vscode-ext_flutter-clean-architecture](https://github.com/KiritchoukC/vscode-ext_flutter-clean-architecture) loyihasidan fork olingan va butunlay qayta yozilgan.
+
+### ✨ Yangi Imkoniyatlar
+
+#### 🏗️ Complete Architecture Generation
+- **15+ Files**: Har bir feature uchun to'liq fayl strukturasi
+- **Domain Layer**: Freezed entities, abstract repositories, use cases
+- **Data Layer**: Models with JSON serialization, repository implementations, data sources
+- **Presentation Layer**: Modern BLoC, pages, widgets
+- **Core Layer**: Failures, exceptions, network info, use cases
+
+#### 🔧 Modern Technology Stack
+- **Freezed 2.4.7**: Immutable data classes
+- **BLoC 8.1.6**: Latest state management
+- **Dio 5.4.0**: HTTP client
+- **Dartz 0.10.1**: Functional programming (Either, Option)
+- **GetIt 7.6.4**: Dependency injection
+- **SharedPreferences 2.2.2**: Local storage
+- **Connectivity Plus 5.0.2**: Network status
+
+#### 🎯 Enhanced BLoC Pattern
+- **Modern Event Handling**: BLoC 8.x syntax
+- **Comprehensive States**: Empty, Loading, Loaded, Error
+- **Input Validation**: Built-in validation logic
+- **Error Mapping**: Proper failure-to-message mapping
+- **Dependency Injection**: Constructor injection ready
+
+#### 📝 Code Generation Ready
+- **JSON Serialization**: json_annotation + build_runner
+- **Freezed Models**: Automatic copyWith, equality, toString
+- **Build Scripts**: Ready for code generation
+
+#### 🧪 Testing Support
+- **BLoC Test 9.1.7**: State testing utilities
+- **Mockito 5.4.4**: Mocking for unit tests
+- **Test Structure**: Proper test setup ready
+
+### 🗑️ Olib Tashlangan
+- **Cubit Support**: Soddalik uchun faqat BLoC pattern qoldirilgan
+- **Eski Dependencies**: Barcha dependency lar yangilangan
+
+### 🔄 Migration from Original
+Agar siz asl extension dan migratsiya qilmoqchi bo'lsangiz:
+1. Eski feature larni backup oling
+2. Yangi extension ni o'rnating  
+3. Yangi feature lar yarating
+4. Kod strukturasini yangi pattern ga moslang
+
+### 🙏 Minnatdorchilik
+- **Asl Muallif**: [KiritchoukC](https://github.com/KiritchoukC)
+- **Tutorial**: [ResoCoder Clean Architecture](https://resocoder.com/2019/08/27/flutter-tdd-clean-architecture-course-1-explanation-project-structure/)
+- **BLoC Library**: [Felix Angelov](https://github.com/felangel)
+
+---
+
+## Original Changelog (v1.0.9 va oldingi versiyalar)
+
+Quyidagi changelog asl loyihadan olingan:
 
 ### [1.0.9](https://github.com/KiritchoukC/vscode-ext_flutter-clean-architecture/compare/v1.0.8...v1.0.9) (2020-10-25)
 
