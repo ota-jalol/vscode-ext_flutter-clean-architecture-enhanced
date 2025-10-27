@@ -262,6 +262,9 @@ export async function generateFeatureArchitecture (
   
   // Generate all template files
   await generateTemplateFiles(featureName, featuresDirectoryPath, projectName);
+  
+  // Generate core files if they don't exist
+  await generateCoreFiles(targetDirectory, projectName);
 }
 
 export function getFeaturesDirectoryPath (currentDirectory: string): string {
@@ -469,7 +472,7 @@ async function createUseCaseTemplate(featureName: string, useCaseName: string, t
     throw new Error(`${snakeCaseUseCaseName}.dart already exists`);
   }
   
-  await writeFileAsync(targetPath, getUseCaseTemplate(featureName, useCaseName, projectName), "utf8");
+  await writeFileAsync(targetPath, getUseCaseTemplate(featureName, projectName), "utf8");
 }
 
 async function createModelTemplate(featureName: string, targetDirectory: string): Promise<void> {
@@ -567,4 +570,55 @@ async function createMessageDisplayWidgetTemplate(targetDirectory: string): Prom
   }
   
   await writeFileAsync(targetPath, getMessageDisplayWidgetTemplate(), "utf8");
+}
+
+async function generateCoreFiles(targetDirectory: string, projectName: string): Promise<void> {
+  const coreDirectoryPath = path.join(targetDirectory, "lib", "core");
+  
+  // Create core directory structure
+  await createDirectories(coreDirectoryPath, [
+    "error",
+    "usecases", 
+    "network",
+  ]);
+  
+  // Create core files
+  await Promise.all([
+    createCoreFailuresFile(path.join(coreDirectoryPath, "error")),
+    createCoreExceptionsFile(path.join(coreDirectoryPath, "error")), 
+    createCoreUseCaseFile(path.join(coreDirectoryPath, "usecases")),
+    createNetworkInfoFile(path.join(coreDirectoryPath, "network")),
+  ]);
+}
+
+async function createCoreFailuresFile(targetDirectory: string): Promise<void> {
+  const targetPath = path.join(targetDirectory, "failures.dart");
+  
+  if (!existsSync(targetPath)) {
+    await writeFileAsync(targetPath, getFailuresTemplate(), "utf8");
+  }
+}
+
+async function createCoreExceptionsFile(targetDirectory: string): Promise<void> {
+  const targetPath = path.join(targetDirectory, "exceptions.dart");
+  
+  if (!existsSync(targetPath)) {
+    await writeFileAsync(targetPath, getExceptionsTemplate(), "utf8");
+  }
+}
+
+async function createCoreUseCaseFile(targetDirectory: string): Promise<void> {
+  const targetPath = path.join(targetDirectory, "usecase.dart");
+  
+  if (!existsSync(targetPath)) {
+    await writeFileAsync(targetPath, getCoreUseCaseTemplate(), "utf8");
+  }
+}
+
+async function createNetworkInfoFile(targetDirectory: string): Promise<void> {
+  const targetPath = path.join(targetDirectory, "network_info.dart");
+  
+  if (!existsSync(targetPath)) {
+    await writeFileAsync(targetPath, getNetworkInfoTemplate(), "utf8");
+  }
 }
